@@ -1,0 +1,40 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube Video Hider",
+    "version": "1.0",
+    "description": "Hide YouTube home videos (Japanese Version).",
+    "icons": {
+        "16": "icon/icon.png",
+        "32": "icon/icon.png",
+        "48": "icon/icon.png",
+        "128": "icon/icon.png"
+    },
+
+    "permissions": ["storage"],
+    "host_permissions": ["https://www.youtube.com/*"],
+    "content_scripts": [
+        {
+            "matches": ["https://www.youtube.com/*"],
+            "js": ["content.js"],
+            "run_at": "document_end"
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true,
+        "browser_style": true
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["icon/icon.svg"],
+            "matches": ["https://www.youtube.com/*"]
+        }
+    ],
+
+    "action": {
+        "default_popup": "options.html"
+    }
+}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <title>YouTube Video Hider Settings</title>
+        <style>
+            :root {
+                --bg: #1e1e1e;
+                --card: #2a2a2a;
+                --text: #ffffff;
+                --accent: #4da3ff;
+                --radius: 14px;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: "Segoe UI", sans-serif;
+                margin: 0;
+                padding: 40px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .container {
+                width: 480px;
+                background: var(--card);
+                padding: 28px;
+                border-radius: var(--radius);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: fadein .4s ease;
+            }
+
+            @keyframes fadein {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            h2 {
+                text-align: center;
+                margin-bottom: 24px;
+                font-size: 22px;
+            }
+
+            .setting-group {
+                margin-bottom: 22px;
+            }
+
+            .label-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+                font-size: 15px;
+            }
+
+            input[type="number"],
+            select {
+                width: 100%;
+                padding: 10px;
+                background: #1b1b1b;
+                color: var(--text);
+                border: 1px solid #444;
+                border-radius: var(--radius);
+                font-size: 15px;
+            }
+
+            .toggle {
+                position: relative;
+                width: 44px;
+                height: 22px;
+            }
+            .toggle input {
+                display: none;
+            }
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                inset: 0;
+                background: #555;
+                border-radius: 22px;
+                transition: .25s;
+            }
+            .slider:before {
+                content: "";
+                position: absolute;
+                height: 16px;
+                width: 16px;
+                background: white;
+                border-radius: 50%;
+                left: 3px;
+                top: 3px;
+                transition: .25s;
+            }
+            input:checked + .slider {
+                background: var(--accent);
+            }
+            input:checked + .slider:before {
+                transform: translateX(22px);
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+                background: var(--accent);
+                border: none;
+                color: white;
+                font-size: 16px;
+                border-radius: var(--radius);
+                cursor: pointer;
+                margin-top: 16px;
+                transition: .2s;
+            }
+            button:hover {
+                opacity: 0.85;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <h2>YouTube Video Hider</h2>
+
+            <div class="setting-group">
+                <div class="label-row"><span>ASMR フィルタ</span></div>
+                <select id="hide_asmrs">
+                    <option value="false">ASMR を表示</option>
+                    <option value="true">ASMR を非表示</option>
+                    <option value="exclusive">ASMR を限定表示</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row"><span>古い動画の基準（日数）</span></div>
+                <input type="number" id="old_threshold" min="1" value="7" />
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>古い動画を非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_old_videos"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>視聴済み動画を非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_watched_videos"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>プレイリストを非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_playlists"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>ミックスリストを非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_mixlists"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>ライブ配信を非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_lives"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>アーカイブを非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_archives"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>スポンサー動画を非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_sponsors"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="label-row">
+                    <span>ショート動画を非表示</span>
+                    <label class="toggle"><input type="checkbox" id="hide_shorts"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <button id="save">保存</button>
+        </div>
+
+        <script src="options.js"></script>
+
+        <div id="toast" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(30,30,30,0.9); color: white; padding: 14px 22px; border-radius: 12px; font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .35s ease, transform .35s ease; z-index: 9999;">保存しました！</div>
+    </body>
+</html>
