@@ -1,3 +1,4 @@
+const hide_count = document.getElementById("hide_count");
 const hide_asmrs = document.getElementById("hide_asmrs");
 const hide_old_videos = document.getElementById("hide_old_videos");
 const hide_watched_videos = document.getElementById("hide_watched_videos");
@@ -7,9 +8,16 @@ const hide_lives = document.getElementById("hide_lives");
 const hide_archives = document.getElementById("hide_archives");
 const hide_sponsors = document.getElementById("hide_sponsors");
 const hide_shorts = document.getElementById("hide_shorts");
-
 const old_threshold = document.getElementById("old_threshold");
 const save_button = document.getElementById("save");
+
+function getHideCount(){
+    chrome.storage.local.get('hide_count',
+        (data) => {
+            hide_count.textContent = (data.hide_count ?? 0).toString();
+        }
+    );
+}
 
 function showToast(message){
     const toast = document.getElementById("toast");
@@ -24,6 +32,8 @@ function showToast(message){
         toast.style.transform = "translateX(-50%) translateY(0)";
     }, 2200);
 }
+
+getHideCount();
 
 chrome.storage.sync.get(
     {
@@ -70,4 +80,5 @@ save_button.addEventListener("click", () => {
         },
         () => showToast("保存しました！")
     );
+    setTimeout(() => {getHideCount();}, 500);
 });

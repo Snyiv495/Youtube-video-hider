@@ -1,5 +1,4 @@
 let hide_counter = 0;
-let hide_counter_element = null;
 let settings = {
     hide_asmrs: false,
     old_threshold: 7,
@@ -117,8 +116,7 @@ function hide(){
         }catch(e){/*ignore*/}
     });
 
-    //カウンターの更新
-    hide_counter_element.textContent = hide_counter.toString();
+    chrome.storage.local.set({'hide_count': hide_counter});
 }
 
 //再非表示
@@ -164,20 +162,7 @@ function insertIcon(){
     button.addEventListener("mouseleave", () => {button.style.opacity = "0.8";});
     button.addEventListener("click", () => {chrome.runtime.sendMessage({action: "open_options"});});
 
-    hide_counter_element = document.createElement("span");
-    hide_counter_element.id = "yt-hide-video-counter";
-    hide_counter_element.textContent = "0";
-
-    Object.assign(hide_counter_element.style, {
-        color: "#aaa",
-        fontSize: "13px",
-        fontWeight: "600",
-        minWidth: "18px",
-        textAlign: "center",
-    });
-
     wrapper.appendChild(button);
-    wrapper.appendChild(hide_counter_element);
 
     logo.parentElement.insertBefore(wrapper, logo.nextSibling);
 }
