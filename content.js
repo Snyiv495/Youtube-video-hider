@@ -1,3 +1,5 @@
+let hide_counter = 0;
+let hide_counter_element = null;
 let settings = {
     hide_asmrs: false,
     old_threshold: 7,
@@ -34,7 +36,7 @@ function isOldVideo(video){
 
 //視聴済み判定
 function isWatchedVideo(video){
-    if(video.querySelector("yt-thumbnail-overlay-progress-bar-view-model")) return true;
+    if(video.querySelector("yt-thumbnail-overlay-progress-bar-view-model, ytd-thumbnail-overlay-resume-playback-renderer")) return true;
     return false;
 }
 
@@ -77,8 +79,8 @@ function isSponsor(video){
     return false;
 }
 
-//ショート判定
-function isShort(section){
+//ショートコンテナ判定
+function isShortContainer(section){
     const section_title = section.querySelector("#title")?.innerText || "";
     if(section_title.includes("ショート")) return true;
     return false;
@@ -86,42 +88,44 @@ function isShort(section){
 
 //非表示化
 function hide(){
-    const sections = document.querySelectorAll("ytd-rich-section-renderer");
-    const items = document.querySelectorAll("ytd-rich-item-renderer");
+    const short_containers = document.querySelectorAll("ytd-rich-section-renderer, ytd-reel-shelf-renderer");
+    const videos = document.querySelectorAll("ytd-rich-item-renderer, yt-lockup-view-model, ytd-video-renderer");
 
-    sections.forEach(section => {
+    //ショート動画コンテナ
+    short_containers.forEach(short_container => {
         try{
-            if(section.dataset.filtered) return;
-            if(settings.hide_shorts && isShort(section)) section.style.display = "none";
-
-            section.dataset.filtered = true;
+            if(short_container.style.display === "none") return;
+            if(settings.hide_shorts && isShortContainer(short_container)){short_container.style.display = "none"; hide_counter++; return;}
             return;
         }catch(e){/*ignore*/}
     })
 
-    items.forEach(item => {
+    //動画
+    videos.forEach(video => {
         try{
-            if(item.dataset.filtered) return;
-            if(settings.hide_asmrs==="true" && isASMR(item)) item.style.display = "none";
-            if(settings.hide_asmrs==="exclusive" && !isASMR(item)) item.style.display = "none";
-            if(settings.hide_old_videos && isOldVideo(item)) item.style.display = "none";
-            if(settings.hide_watched_videos && isWatchedVideo(item)) item.style.display = "none";
-            if(settings.hide_playlists && isPlayList(item)) item.style.display = "none";
-            if(settings.hide_mixlists && isMixList(item)) item.style.display = "none";
-            if(settings.hide_lives && isLive(item)) item.style.display = "none";
-            if(settings.hide_archives && isArchive(item)) item.style.display = "none";
-            if(settings.hide_sponsors && isSponsor(item)) item.style.display = "none";
-
-            item.dataset.filtered = true;
+            if(video.style.display === "none") return;
+            if(settings.hide_asmrs==="true" && isASMR(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_asmrs==="exclusive" && !isASMR(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_old_videos && isOldVideo(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_watched_videos && isWatchedVideo(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_playlists && isPlayList(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_mixlists && isMixList(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_lives && isLive(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_archives && isArchive(video)){video.style.display = "none"; hide_counter++; return;}
+            if(settings.hide_sponsors && isSponsor(video)){video.style.display = "none"; hide_counter++; return;}
             return;
         }catch(e){/*ignore*/}
     });
+
+    //カウンターの更新
+    hide_counter_element.textContent = hide_counter.toString();
 }
 
 //再非表示
 function reHide(){
-    document.querySelectorAll("ytd-rich-item-renderer, ytd-rich-section-renderer").forEach(element => {
-        delete element.dataset.filtered;
+    hide_counter = 0;
+    document.querySelectorAll("ytd-rich-section-renderer, ytd-reel-shelf-renderer, ytd-rich-item-renderer, yt-lockup-view-model, ytd-video-renderer").forEach(element => {
+        delete element.style.display;
         element.style.display = "";
     });
 
@@ -131,19 +135,24 @@ function reHide(){
 //アイコンの挿入
 function insertIcon(){
     const logo = document.querySelector("#logo");
+    const wrapper = document.createElement("div");
+    const button = document.createElement("img");
 
     if(!logo || !logo.parentElement) return;
     if(document.getElementById("yt-hide-video-icon")) return;
 
-    const button = document.createElement("img");
+    wrapper.id = "yt-hide-video-wrapper";
+    wrapper.style.display = "flex";
+    wrapper.style.alignItems = "center";
+    wrapper.style.gap = "6px";
+
     button.src = chrome.runtime.getURL("icon/icon.svg");
     button.id = "yt-hide-video-icon";
 
     Object.assign(button.style,
         {
-            width: "28px",
-            height: "28px",
-            marginLeft: "16px",
+            width: "32px",
+            height: "32px",
             cursor: "pointer",
             opacity: "0.82",
             transition: "0.25s",
@@ -155,7 +164,22 @@ function insertIcon(){
     button.addEventListener("mouseleave", () => {button.style.opacity = "0.8";});
     button.addEventListener("click", () => {chrome.runtime.sendMessage({action: "open_options"});});
 
-    logo.parentElement.insertBefore(button, logo.nextSibling);
+    hide_counter_element = document.createElement("span");
+    hide_counter_element.id = "yt-hide-video-counter";
+    hide_counter_element.textContent = "0";
+
+    Object.assign(hide_counter_element.style, {
+        color: "#aaa",
+        fontSize: "13px",
+        fontWeight: "600",
+        minWidth: "18px",
+        textAlign: "center",
+    });
+
+    wrapper.appendChild(button);
+    wrapper.appendChild(hide_counter_element);
+
+    logo.parentElement.insertBefore(wrapper, logo.nextSibling);
 }
 
 //設定の取得
@@ -193,5 +217,5 @@ hide_observer.observe(document.body, {childList: true, subtree: true});
 icon_observer.observe(document.body, {childList: true, subtree: true});
 
 //初回実行
-hide();
 insertIcon();
+hide();
